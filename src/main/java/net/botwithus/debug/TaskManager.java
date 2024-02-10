@@ -2,7 +2,10 @@ package net.botwithus.debug;
 
 import net.botwithus.api.game.hud.Dialog;
 import net.botwithus.api.game.hud.inventories.Backpack;
+import net.botwithus.rs3.game.Client;
 import net.botwithus.rs3.game.queries.builders.items.GroundItemQuery;
+import net.botwithus.rs3.game.queries.results.EntityResultSet;
+import net.botwithus.rs3.game.scene.entities.item.GroundItem;
 
 import java.util.List;
 
@@ -10,7 +13,7 @@ public class TaskManager {
 
         private final List<Task> tasks;
     public enum GameState {
-        DEFAULT, FoundScripture, FoundManuScript, FoundITEM
+        DEFAULT, FoundITEM
     }
     private final MainScript mainScript;
 
@@ -26,7 +29,7 @@ public class TaskManager {
                 GameState gameState = getGameState();
 
                 switch (gameState) {
-                    case FoundManuScript, FoundScripture:
+                    case FoundITEM:
                         switchTo(new InventoryManagementTask(mainScript));
                         break;
 
@@ -42,14 +45,15 @@ public class TaskManager {
     }
 
     private GameState getGameState() {
-        if (!GroundItemQuery.newQuery().name("Manuscript of Wen", String::contains).results().isEmpty()) {
-            return GameState.FoundManuScript;
+        for(String lootName : mainScript.lootToPickup) {
+            EntityResultSet<GroundItem> loot = GroundItemQuery.newQuery().name(lootName, String::contains).results();
+            for (GroundItem item : loot) {
+                if (item != null) {
+                    return GameState.FoundITEM;
+                }
+            }
         }
 
-        if (!GroundItemQuery.newQuery().name("Scripture of Wen").results().isEmpty())
-        {
-            return GameState.FoundScripture;
-        }
 
         return GameState.DEFAULT;
     }
