@@ -13,6 +13,7 @@ import net.botwithus.rs3.script.LoopingScript;
 import net.botwithus.rs3.script.ScriptGraphicsContext;
 import net.botwithus.rs3.script.TickingScript;
 import net.botwithus.rs3.script.config.ScriptConfig;
+import net.botwithus.rs3.util.RandomGenerator;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -71,7 +72,7 @@ public class MainScript extends TickingScript {
             taskManager.runTasks();
             if(levelUpNotification) {
                 checkSkillLevelUp();
-                Execution.delay(1000);
+                Execution.delay(RandomGenerator.nextInt(1000, 2000));
             }
             if(Client.getGameState() != Client.GameState.LOGGED_IN && LogoutNotification)
             {
@@ -82,7 +83,7 @@ public class MainScript extends TickingScript {
             if(localPlayer.getCurrentHealth() <= 0 && Client.getGameState() == Client.GameState.LOGGED_IN && LogoutNotification)
             {
                 sendDiscordWebhook("Player Died!", "Player Died!");
-                Execution.delayWhile(10000, () -> localPlayer.getCurrentHealth() <= 0);
+                Execution.delayWhile(RandomGenerator.nextInt(6000, 12000), () -> localPlayer.getCurrentHealth() <= 0);
             }
         }catch (Exception e)
         {
