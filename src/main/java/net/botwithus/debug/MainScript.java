@@ -57,12 +57,6 @@ public class MainScript extends TickingScript {
         taskManager = new TaskManager(tasks, this);
         //do a starter task to get it started
         tasks.add(new InventoryManagementTask(this));
-//        if(chatNotifications)
-//        {
-//            subscribe(ChatMessageEvent.class, chatMessageEvent -> {
-//                sendDiscordWebhook("Chat Message", chatMessageEvent.getName()+": "+chatMessageEvent.getMessage());
-//            });
-//        }
         return super.onInitialize();
     }
 
