@@ -6,10 +6,12 @@ import net.botwithus.rs3.game.Area;
 import net.botwithus.rs3.game.Client;
 import net.botwithus.rs3.game.Coordinate;
 
+import net.botwithus.rs3.game.scene.entities.characters.player.LocalPlayer;
 import net.botwithus.rs3.game.skills.Skills;
 import net.botwithus.rs3.script.Execution;
 import net.botwithus.rs3.script.LoopingScript;
 import net.botwithus.rs3.script.ScriptGraphicsContext;
+import net.botwithus.rs3.script.TickingScript;
 import net.botwithus.rs3.script.config.ScriptConfig;
 
 import java.io.BufferedReader;
@@ -22,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainScript extends LoopingScript {
+public class MainScript extends TickingScript {
 
 
 
@@ -42,7 +44,6 @@ public class MainScript extends LoopingScript {
     public boolean LogoutNotification;
 
     public Map<Skills, Integer> previousSkillLevels = new HashMap<>();
-    public boolean chatNotifications;
 
 
 
@@ -50,9 +51,8 @@ public class MainScript extends LoopingScript {
     List<TaskManager.Task> tasks = new ArrayList<>();
 
     @Override
-    public boolean initialize() {
+    public boolean onInitialize() {
         this.sgc = new MainGraphicsContext(getConsole(), this);
-        this.loopDelay = 590;
         isBackgroundScript = true;
         taskManager = new TaskManager(tasks, this);
         //do a starter task to get it started
@@ -63,11 +63,11 @@ public class MainScript extends LoopingScript {
 //                sendDiscordWebhook("Chat Message", chatMessageEvent.getName()+": "+chatMessageEvent.getMessage());
 //            });
 //        }
-        return super.initialize();
+        return super.onInitialize();
     }
 
     @Override
-    public void onLoop() {
+    public void onTick(LocalPlayer localPlayer) {
         if(!runScript)
         {
             return;
@@ -85,10 +85,10 @@ public class MainScript extends LoopingScript {
                 sendDiscordWebhook("Player Logged Out!", "Player Logged Out!");
                 runScript = false;
             }
-            if(Client.getLocalPlayer().getCurrentHealth() <= 0 && Client.getGameState() == Client.GameState.LOGGED_IN && LogoutNotification)
+            if(localPlayer.getCurrentHealth() <= 0 && Client.getGameState() == Client.GameState.LOGGED_IN && LogoutNotification)
             {
                 sendDiscordWebhook("Player Died!", "Player Died!");
-                Execution.delayWhile(10000, () -> Client.getLocalPlayer().getCurrentHealth() <= 0);
+                Execution.delayWhile(10000, () -> localPlayer.getCurrentHealth() <= 0);
             }
         }catch (Exception e)
         {
