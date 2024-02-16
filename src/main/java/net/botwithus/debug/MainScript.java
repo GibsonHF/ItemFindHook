@@ -15,15 +15,10 @@ import net.botwithus.rs3.script.TickingScript;
 import net.botwithus.rs3.script.config.ScriptConfig;
 import net.botwithus.rs3.util.RandomGenerator;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MainScript extends LoopingScript {
 
@@ -34,12 +29,14 @@ public class MainScript extends LoopingScript {
 
     public String WebHookURL = "";
     public boolean levelUpNotification;
+    public ScriptConfig config;
 
 
     public MainScript(String name, ScriptConfig scriptConfig, ScriptDefinition scriptDefinition) {
-        super(name, scriptConfig, scriptDefinition);
-    }
 
+        super(name, scriptConfig, scriptDefinition);
+        config = scriptConfig;
+    }
 
     public boolean runScript = false;
     public boolean LogoutNotification;
@@ -58,8 +55,29 @@ public class MainScript extends LoopingScript {
         taskManager = new TaskManager(tasks, this);
         //do a starter task to get it started
         tasks.add(new InventoryManagementTask(this));
+        if(config.getProperty("lootToPickup") != null) {
+            String lootToPickupString = config.getProperty("lootToPickup");
+            lootToPickup = new ArrayList<>(Arrays.asList(lootToPickupString.split(",")));
+        }
+        if(config.getProperty("WebHookURL") != null)
+             WebHookURL = config.getProperty("WebHookURL");
+
         return super.initialize();
     }
+
+    public void saveConfig(){
+        String lootToPickupString = String.join(",", lootToPickup);
+        config.addProperty("lootToPickup", lootToPickupString);
+        config.addProperty("WebHookURL", WebHookURL);
+        config.save();
+    }
+    @Override
+    public void uninitialize() {
+        saveConfig();
+        super.uninitialize();
+    }
+
+
 
     @Override
     public void onLoop() {
@@ -151,6 +169,5 @@ public class MainScript extends LoopingScript {
     public List<String> getLootToPickup() {
         return lootToPickup;
     }
-
 
 }
