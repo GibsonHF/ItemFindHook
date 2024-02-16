@@ -102,18 +102,24 @@ public class InventoryManagementTask implements TaskManager.Task {
     }
 
     private String buildJsonPayloadWithoutImage(String itemName, int amount) {
-        // Format the timestamp
-        String timestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault()).format(Instant.now());
-        return "{\"embeds\":[{"
+        StringBuilder jsonPayload = new StringBuilder("{\"embeds\":[{"
                 + "\"title\":\"Item Drop!\","
                 + "\"description\":\"An item has been found!\","
-                + "\"color\": 5814783," // Grey color, you can change it as per your preference
+                + "\"color\": 5814783,"
                 + "\"fields\":["
                 + "    {\"name\":\"Item\", \"value\":\"" + itemName + "\", \"inline\":true},"
-                + "    {\"name\":\"Amount\", \"value\":\"" + amount + "\", \"inline\":true},"
-                + "    {\"name\":\"Time\", \"value\":\"" + timestamp + "\", \"inline\":false}"
-                + "]"
-                + "}]}";
+                + "    {\"name\":\"Amount\", \"value\":\"" + amount + "\", \"inline\":true}");
+
+        if (!mainScript.hideTimestamp) {
+            String timestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault()).format(Instant.now());
+            jsonPayload.append(",{\"name\":\"Time\", \"value\":\"" + timestamp + "\", \"inline\":false}");
+        }else {
+            jsonPayload.append(",{\"name\":\"Time\", \"value\":\"Hidden\", \"inline\":false}");
+        }
+
+        jsonPayload.append("]}]}");
+
+        return jsonPayload.toString();
     }
 
 

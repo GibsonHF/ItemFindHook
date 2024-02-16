@@ -33,6 +33,7 @@ public class MainGraphicsContext extends ScriptGraphicsContext {
                     script.runScript = ImGui.Checkbox("Run Script", script.runScript);
                     script.levelUpNotification = ImGui.Checkbox("Level Up Notification", script.levelUpNotification);
                     script.LogoutNotification = ImGui.Checkbox("Logout Notification", script.LogoutNotification);
+                    script.hideTimestamp = ImGui.Checkbox("Hide Timestamp", script.hideTimestamp);
                     //set length of inputtext to 256
                     script.WebHookURL = ImGui.InputText("Webhook URL", script.WebHookURL, 256, 0);
                     ImGui.Separator();

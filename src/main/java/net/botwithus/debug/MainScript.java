@@ -41,6 +41,8 @@ public class MainScript extends LoopingScript {
     public boolean runScript = false;
     public boolean LogoutNotification;
 
+    public boolean hideTimestamp;
+
     public Map<Skills, Integer> previousSkillLevels = new HashMap<>();
 
 
