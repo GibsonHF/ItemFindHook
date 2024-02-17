@@ -42,6 +42,13 @@ public class MainGraphicsContext extends ScriptGraphicsContext {
                         script.sendDiscordWebhook("Test", "Test");
                         script.println(script.WebHookURL);
                     }
+                    ImGui.SameLine();
+                    if(ImGui.Button("Save Loot Settings"))
+                    {
+                        String lootToPickupString = String.join(",", script.lootToPickup);
+                        script.config.addProperty("lootToPickup", lootToPickupString);
+                        script.config.save();
+                    }
                     ImGui.Separator();
                     lootNameInput = ImGui.InputText("Loot", lootNameInput);
                     if (ImGui.Button("Add Loot")) {
