@@ -31,9 +31,55 @@ public class MainGraphicsContext extends ScriptGraphicsContext {
 
                 if (ImGui.BeginTabItem("Settings", 0)) {
                     script.runScript = ImGui.Checkbox("Run Script", script.runScript);
+                    if(ImGui.IsItemHovered())
+                    {
+                        String tooltipText = "Toggles the script on and off. When off, the script will not run.";
+                        ImGui.BeginTooltip();
+                        ImGui.BeginChild("runChild", 500, 40, true, 0); // Set the width of the child window to 500
+                        ImGui.Text(tooltipText);
+                        ImGui.EndChild();
+                        ImGui.EndTooltip();
+                    }
                     script.levelUpNotification = ImGui.Checkbox("Level Up Notification", script.levelUpNotification);
+                    if(ImGui.IsItemHovered())
+                    {
+                        String tooltipText = "Notifies of level up and what skill in the webhook message.";
+                        ImGui.BeginTooltip();
+                        ImGui.BeginChild("LevelUpChild", 500, 40, true, 0); // Set the width of the child window to 500
+                        ImGui.Text(tooltipText);
+                        ImGui.EndChild();
+                        ImGui.EndTooltip();
+                    }
                     script.LogoutNotification = ImGui.Checkbox("Logout Notification", script.LogoutNotification);
+                    if(ImGui.IsItemHovered())
+                    {
+                        String tooltipText = "Notifies player logout in the webhook message.";
+                        ImGui.BeginTooltip();
+                        ImGui.BeginChild("LogoutChild", 500, 40, true, 0); // Set the width of the child window to 500
+                        ImGui.Text(tooltipText);
+                        ImGui.EndChild();
+                        ImGui.EndTooltip();
+                    }
                     script.hideTimestamp = ImGui.Checkbox("Hide Timestamp", script.hideTimestamp);
+                    if(ImGui.IsItemHovered())
+                    {
+                        String tooltipText = "Hides the timestamp of when drop was found in the webhook message.";
+                        ImGui.BeginTooltip();
+                        ImGui.BeginChild("TimestampChild", 500, 40, true, 0); // Set the width of the child window to 500
+                        ImGui.Text(tooltipText);
+                        ImGui.EndChild();
+                        ImGui.EndTooltip();
+                    }
+                    script.includeKillCount = ImGui.Checkbox("Show Kill Count", script.includeKillCount);
+                    if(ImGui.IsItemHovered())
+                    {
+                        String tooltipText = "Shows the kill count in the discord webhook message when drop is received, Please unfilter game messages.";
+                        ImGui.BeginTooltip();
+                        ImGui.BeginChild("TooltipChild", 500, 50, true, 0); // Set the width of the child window to 500
+                        ImGui.Text(tooltipText);
+                        ImGui.EndChild();
+                        ImGui.EndTooltip();
+                    }
                     //set length of inputtext to 256
                     script.WebHookURL = ImGui.InputText("Webhook URL", script.WebHookURL, 256, 0);
                     ImGui.Separator();
@@ -43,10 +89,11 @@ public class MainGraphicsContext extends ScriptGraphicsContext {
                         script.println(script.WebHookURL);
                     }
                     ImGui.SameLine();
-                    if(ImGui.Button("Save Loot Settings"))
+                    if(ImGui.Button("Save Settings"))
                     {
                         String lootToPickupString = String.join(",", script.lootToPickup);
                         script.config.addProperty("lootToPickup", lootToPickupString);
+                        script.config.addProperty("WebHookURL", script.WebHookURL);
                         script.config.save();
                     }
                     ImGui.Separator();

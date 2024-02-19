@@ -7,6 +7,7 @@ import net.botwithus.rs3.game.queries.results.EntityResultSet;
 import net.botwithus.rs3.game.scene.entities.item.GroundItem;
 import net.botwithus.rs3.game.scene.entities.object.SceneObject;
 import net.botwithus.rs3.script.Execution;
+import net.botwithus.rs3.script.Script;
 
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -86,7 +87,7 @@ public class InventoryManagementTask implements TaskManager.Task {
             http.setRequestProperty("Content-Type", "application/json");
             http.setDoOutput(true);
 
-            String jsonPayload = buildJsonPayloadWithoutImage(itemName, amount);
+            String jsonPayload = buildJsonPayloadWithoutImage(itemName, amount, mainScript.killCount);
             byte[] out = jsonPayload.getBytes(StandardCharsets.UTF_8);
             int length = out.length;
 
@@ -101,7 +102,7 @@ public class InventoryManagementTask implements TaskManager.Task {
         }
     }
 
-    private String buildJsonPayloadWithoutImage(String itemName, int amount) {
+    private String buildJsonPayloadWithoutImage(String itemName, int amount, int killCount) {
         StringBuilder jsonPayload = new StringBuilder("{\"embeds\":[{"
                 + "\"title\":\"Item Drop!\","
                 + "\"description\":\"An item has been found!\","
@@ -116,7 +117,9 @@ public class InventoryManagementTask implements TaskManager.Task {
         }else {
             jsonPayload.append(",{\"name\":\"Time\", \"value\":\"Hidden\", \"inline\":false}");
         }
-
+        if(mainScript.includeKillCount) {
+            jsonPayload.append(",{\"name\":\"Kill Count\", \"value\":\"" + killCount + "\", \"inline\":true}");
+        }
         jsonPayload.append("]}]}");
 
         return jsonPayload.toString();

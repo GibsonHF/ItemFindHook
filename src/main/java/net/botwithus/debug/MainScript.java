@@ -1,17 +1,16 @@
 package net.botwithus.debug;
 
+import net.botwithus.api.game.hud.inventories.Backpack;
 import net.botwithus.internal.scripts.ScriptDefinition;
 import net.botwithus.rs3.events.impl.ChatMessageEvent;
 import net.botwithus.rs3.game.Area;
 import net.botwithus.rs3.game.Client;
 import net.botwithus.rs3.game.Coordinate;
 
+import net.botwithus.rs3.game.actionbar.ActionBar;
 import net.botwithus.rs3.game.scene.entities.characters.player.LocalPlayer;
 import net.botwithus.rs3.game.skills.Skills;
-import net.botwithus.rs3.script.Execution;
-import net.botwithus.rs3.script.LoopingScript;
-import net.botwithus.rs3.script.ScriptGraphicsContext;
-import net.botwithus.rs3.script.TickingScript;
+import net.botwithus.rs3.script.*;
 import net.botwithus.rs3.script.config.ScriptConfig;
 import net.botwithus.rs3.util.RandomGenerator;
 
@@ -30,6 +29,7 @@ public class MainScript extends LoopingScript {
     public String WebHookURL = "";
     public boolean levelUpNotification;
     public ScriptConfig config;
+    public boolean includeKillCount;
 
 
     public MainScript(String name, ScriptConfig scriptConfig, ScriptDefinition scriptDefinition) {
@@ -46,7 +46,7 @@ public class MainScript extends LoopingScript {
     public Map<Skills, Integer> previousSkillLevels = new HashMap<>();
 
 
-
+    public int killCount;
     TaskManager taskManager;
     List<TaskManager.Task> tasks = new ArrayList<>();
 
@@ -63,6 +63,16 @@ public class MainScript extends LoopingScript {
         }
         if(config.getProperty("WebHookURL") != null)
              WebHookURL = config.getProperty("WebHookURL");
+
+        subscribe(ChatMessageEvent.class, chatMessageEvent -> {
+            String message = chatMessageEvent.getMessage();
+            if (message.contains("You have killed")) {
+                String[] splitMessage = message.split(" ");
+                String killCountString = splitMessage[3].replace(",", "");
+                killCount = Integer.parseInt(killCountString);
+            }
+
+        });
 
         return super.initialize();
     }
@@ -171,5 +181,4 @@ public class MainScript extends LoopingScript {
     public List<String> getLootToPickup() {
         return lootToPickup;
     }
-
 }
