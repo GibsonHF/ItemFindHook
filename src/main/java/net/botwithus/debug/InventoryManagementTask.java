@@ -21,6 +21,8 @@ import java.util.*;
 public class InventoryManagementTask implements TaskManager.Task {
 
     private MainScript mainScript;
+    private long lastWebhookCallTime = 0;
+    private static final long WEBHOOK_COOLDOWN = 10000; // 10 seconds
     public InventoryManagementTask(MainScript mainScript) {
         this.mainScript = mainScript;
 
@@ -81,6 +83,12 @@ public class InventoryManagementTask implements TaskManager.Task {
 
     public void sendDiscordWebhook(String itemName, int amount) {
         try {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastWebhookCallTime < WEBHOOK_COOLDOWN) {
+                return;
+            }
+            lastWebhookCallTime = currentTime;
+
             URL url = new URL(mainScript.WebHookURL);
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod("POST");
@@ -124,7 +132,6 @@ public class InventoryManagementTask implements TaskManager.Task {
 
         return jsonPayload.toString();
     }
-
 
 
 }

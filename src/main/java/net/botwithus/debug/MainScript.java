@@ -111,9 +111,14 @@ public class MainScript extends LoopingScript {
             }
             if(Client.getLocalPlayer().getCurrentHealth() <= 0 && Client.getGameState() == Client.GameState.LOGGED_IN && LogoutNotification)
             {
-                sendDiscordWebhook("Player Died!", "Player Died!");
+                if(Backpack.isFull()) {
+                    sendDiscordWebhook("Player Died With a full backpack", "Player Died With a full backpack!");
+                }else {
+                    sendDiscordWebhook("Player Died!", "Player Died!");
+                }
                 Execution.delayWhile(RandomGenerator.nextInt(6000, 12000), () -> Client.getLocalPlayer().getCurrentHealth() <= 0);
             }
+
         }catch (Exception e)
         {
             println(e.getMessage());

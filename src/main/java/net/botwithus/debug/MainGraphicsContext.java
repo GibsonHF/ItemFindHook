@@ -1,8 +1,10 @@
 package net.botwithus.debug;
 
+import net.botwithus.rs3.game.Inventory;
 import net.botwithus.rs3.game.skills.Skills;
 import net.botwithus.rs3.imgui.ImGui;
 import net.botwithus.rs3.imgui.NativeInteger;
+import net.botwithus.rs3.imgui.Vector2f;
 import net.botwithus.rs3.script.ScriptConsole;
 import net.botwithus.rs3.script.ScriptGraphicsContext;
 
@@ -15,72 +17,30 @@ public class MainGraphicsContext extends ScriptGraphicsContext {
     private final MainScript script;
     private String lootNameInput = "Type Here...";
 
+    public InventoryManagementTask inventoryManagementTask;
+
 
     public MainGraphicsContext(ScriptConsole console, MainScript script) {
         super(console);
         this.script = script;
+        inventoryManagementTask = new InventoryManagementTask(script);
     }
 
 
     public void drawSettings() {
         ImGui.SetWindowSize(200.f, 200.f);
-        if (ImGui.Begin("Item Finder", 0)) {
+        if (ImGui.Begin("Notifier", 0)) {
 
 
             if (ImGui.BeginTabBar("SettingsTabBar", 0)) {
 
                 if (ImGui.BeginTabItem("Settings", 0)) {
-                    script.runScript = ImGui.Checkbox("Run Script", script.runScript);
-                    if(ImGui.IsItemHovered())
-                    {
-                        String tooltipText = "Toggles the script on and off. When off, the script will not run.";
-                        ImGui.BeginTooltip();
-                        ImGui.BeginChild("runChild", 500, 40, true, 0); // Set the width of the child window to 500
-                        ImGui.Text(tooltipText);
-                        ImGui.EndChild();
-                        ImGui.EndTooltip();
-                    }
-                    script.levelUpNotification = ImGui.Checkbox("Level Up Notification", script.levelUpNotification);
-                    if(ImGui.IsItemHovered())
-                    {
-                        String tooltipText = "Notifies of level up and what skill in the webhook message.";
-                        ImGui.BeginTooltip();
-                        ImGui.BeginChild("LevelUpChild", 500, 40, true, 0); // Set the width of the child window to 500
-                        ImGui.Text(tooltipText);
-                        ImGui.EndChild();
-                        ImGui.EndTooltip();
-                    }
-                    script.LogoutNotification = ImGui.Checkbox("Logout Notification", script.LogoutNotification);
-                    if(ImGui.IsItemHovered())
-                    {
-                        String tooltipText = "Notifies player logout in the webhook message.";
-                        ImGui.BeginTooltip();
-                        ImGui.BeginChild("LogoutChild", 500, 40, true, 0); // Set the width of the child window to 500
-                        ImGui.Text(tooltipText);
-                        ImGui.EndChild();
-                        ImGui.EndTooltip();
-                    }
-                    script.hideTimestamp = ImGui.Checkbox("Hide Timestamp", script.hideTimestamp);
-                    if(ImGui.IsItemHovered())
-                    {
-                        String tooltipText = "Hides the timestamp of when drop was found in the webhook message.";
-                        ImGui.BeginTooltip();
-                        ImGui.BeginChild("TimestampChild", 500, 40, true, 0); // Set the width of the child window to 500
-                        ImGui.Text(tooltipText);
-                        ImGui.EndChild();
-                        ImGui.EndTooltip();
-                    }
-                    script.includeKillCount = ImGui.Checkbox("Show Kill Count", script.includeKillCount);
-                    if(ImGui.IsItemHovered())
-                    {
-                        String tooltipText = "Shows the kill count in the discord webhook message when drop is received, Please unfilter game messages.";
-                        ImGui.BeginTooltip();
-                        ImGui.BeginChild("TooltipChild", 500, 50, true, 0); // Set the width of the child window to 500
-                        ImGui.Text(tooltipText);
-                        ImGui.EndChild();
-                        ImGui.EndTooltip();
-                    }
-                    //set length of inputtext to 256
+                    script.runScript = createCheckboxWithTooltip("Run Script", script.runScript, "Toggles the script on and off. When off, the script will not run.", "runChild");
+                    script.levelUpNotification = createCheckboxWithTooltip("Level Up Notification", script.levelUpNotification, "Notifies of level up and what skill in the webhook message.", "LevelUpChild");
+                    script.LogoutNotification = createCheckboxWithTooltip("Logout Notification", script.LogoutNotification, "Notifies player logout in the webhook message.", "LogoutChild");
+                    script.hideTimestamp = createCheckboxWithTooltip("Hide Timestamp", script.hideTimestamp, "Hides the timestamp of when drop was found in the webhook message.", "TimestampChild");
+                    script.includeKillCount = createCheckboxWithTooltip("Show Kill Count", script.includeKillCount, "Shows the kill count in the discord webhook message when drop is received, Please unfilter game messages.", "TooltipChild");
+                    ImGui.Separator();
                     script.WebHookURL = ImGui.InputText("Webhook URL", script.WebHookURL, 256, 0);
                     ImGui.Separator();
                     if(ImGui.Button("Send test webhook"))
@@ -99,8 +59,10 @@ public class MainGraphicsContext extends ScriptGraphicsContext {
                     ImGui.Separator();
                     lootNameInput = ImGui.InputText("Loot", lootNameInput);
                     if (ImGui.Button("Add Loot")) {
-                        script.addLoot(lootNameInput);
-                        lootNameInput = "";
+                        if(!lootNameInput.equals("Type Here...") && !lootNameInput.equals("")) {
+                            script.addLoot(lootNameInput);
+                            lootNameInput = "";
+                        }
                     }
                     ImGui.Separator();
 
@@ -132,6 +94,24 @@ public class MainGraphicsContext extends ScriptGraphicsContext {
         }
     }
 
+    private boolean createCheckboxWithTooltip(String label, boolean value, String tooltipText, String childId) {
+        boolean result = ImGui.Checkbox(label, value);
+        if(ImGui.IsItemHovered()) {
+            ImGui.BeginTooltip();
+            Vector2f textSize = ImGui.CalcTextSize(tooltipText);
+            float textWidth = textSize.getX();
+            float boxWidth = 500;
+            float charWidth = textWidth / tooltipText.length();
+            int charsPerLine = (int) (boxWidth / charWidth);
+            int textLines = (int) Math.ceil((double) tooltipText.length() / charsPerLine);
+            float textHeight = textLines * textSize.getY() + 20;
+            ImGui.BeginChild(childId, boxWidth, textHeight, true, 0);
+            ImGui.Text(tooltipText);
+            ImGui.EndChild();
+            ImGui.EndTooltip();
+        }
+        return result;
+    }
 
 
     @Override
