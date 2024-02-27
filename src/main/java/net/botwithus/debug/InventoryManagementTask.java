@@ -54,7 +54,7 @@ public class InventoryManagementTask implements TaskManager.Task {
             int notedId = originalId + 1;
             EntityResultSet<GroundItem> loot = GroundItemQuery.newQuery().ids(originalId, notedId).results();
             for (GroundItem item : loot) {
-                if (item != null) {
+                if (item != null && !lootFound.containsKey(lootName)) {
                     mainScript.println("Id of item " + nametoidconverter(lootName));
                     lootFound.put(lootName, lootFound.getOrDefault(lootName, 0) + item.getStackSize()); // Increment count
                     mainScript.lootCount.put(lootName, mainScript.lootCount.get(lootName) + item.getStackSize()); // Increment count
@@ -62,12 +62,12 @@ public class InventoryManagementTask implements TaskManager.Task {
                 }
             }
         }
-        // Send a single webhook for all the loot found
-        for (Map.Entry<String, Integer> entry : lootFound.entrySet()) {
-            sendDiscordWebhook(entry.getKey(), entry.getValue());
+        if (!lootFound.isEmpty()) {
+            for (Map.Entry<String, Integer> entry : lootFound.entrySet()) {
+                sendDiscordWebhook(entry.getKey(), entry.getValue());
+            }
+            lootFound.clear();
         }
-        // Clear the lootFound map
-        lootFound.clear();
     }
 
     public int nametoidconverter(String name) {
