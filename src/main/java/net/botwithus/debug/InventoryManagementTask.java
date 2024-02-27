@@ -48,20 +48,26 @@ public class InventoryManagementTask implements TaskManager.Task {
     @Override
     public void perform() {
         mainScript.println("Performing InventoryManagementTask");
-        //send discord webhook message
+        Map<String, Integer> lootFound = new HashMap<>();
         for(String lootName : mainScript.lootToPickup) {
             int originalId = nametoidconverter(lootName);
             int notedId = originalId + 1;
             EntityResultSet<GroundItem> loot = GroundItemQuery.newQuery().ids(originalId, notedId).results();
             for (GroundItem item : loot) {
                 if (item != null) {
-                    sendDiscordWebhook(lootName, item.getStackSize());
                     mainScript.println("Id of item " + nametoidconverter(lootName));
+                    lootFound.put(lootName, lootFound.getOrDefault(lootName, 0) + item.getStackSize()); // Increment count
                     mainScript.lootCount.put(lootName, mainScript.lootCount.get(lootName) + item.getStackSize()); // Increment count
-                    Execution.delay(10000);
+                    Execution.delay(1000);
                 }
             }
         }
+        // Send a single webhook for all the loot found
+        for (Map.Entry<String, Integer> entry : lootFound.entrySet()) {
+            sendDiscordWebhook(entry.getKey(), entry.getValue());
+        }
+        // Clear the lootFound map
+        lootFound.clear();
     }
 
     public int nametoidconverter(String name) {

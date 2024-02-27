@@ -60,6 +60,7 @@ public class MainScript extends LoopingScript {
         if(config.getProperty("lootToPickup") != null) {
             String lootToPickupString = config.getProperty("lootToPickup");
             lootToPickup = new ArrayList<>(Arrays.asList(lootToPickupString.split(",")));
+            lootToPickup.removeIf(lootName -> lootName.trim().isEmpty() || !lootName.matches(".*[a-zA-Z]+.*"));
         }
         if(config.getProperty("WebHookURL") != null)
              WebHookURL = config.getProperty("WebHookURL");
@@ -178,9 +179,10 @@ public class MainScript extends LoopingScript {
     }
 
     public void addLoot(String lootNameInput) {
-        lootToPickup.add(lootNameInput);
-        lootCount.put(lootNameInput, 0); // Initialize count to 0
-
+        if (!lootNameInput.trim().isEmpty() && lootNameInput.matches(".*[a-zA-Z]+.*")) {
+            lootToPickup.add(lootNameInput);
+            lootCount.put(lootNameInput, 0); // Initialize count to 0
+        }
     }
 
     public List<String> getLootToPickup() {
