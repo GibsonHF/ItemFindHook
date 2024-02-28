@@ -31,6 +31,8 @@ public class MainScript extends LoopingScript {
     public ScriptConfig config;
     public boolean includeKillCount;
 
+    public InventoryManagementTask inventoryManagementTask;
+
 
     public MainScript(String name, ScriptConfig scriptConfig, ScriptDefinition scriptDefinition) {
 
@@ -50,12 +52,14 @@ public class MainScript extends LoopingScript {
     TaskManager taskManager;
     List<TaskManager.Task> tasks = new ArrayList<>();
 
+
     @Override
     public boolean initialize() {
         this.sgc = new MainGraphicsContext(getConsole(), this);
         isBackgroundScript = true;
         taskManager = new TaskManager(tasks, this);
         //do a starter task to get it started
+        inventoryManagementTask = new InventoryManagementTask(this);
         tasks.add(new InventoryManagementTask(this));
         if(config.getProperty("lootToPickup") != null) {
             String lootToPickupString = config.getProperty("lootToPickup");
@@ -99,7 +103,6 @@ public class MainScript extends LoopingScript {
             return;
         }
         try {
-
             taskManager.runTasks();
             if(levelUpNotification) {
                 checkSkillLevelUp();

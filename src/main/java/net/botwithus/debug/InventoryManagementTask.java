@@ -18,11 +18,11 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static net.botwithus.rs3.script.ScriptConsole.println;
+
 public class InventoryManagementTask implements TaskManager.Task {
 
     private MainScript mainScript;
-    private long lastWebhookCallTime = 0;
-    private static final long WEBHOOK_COOLDOWN = 10000; // 10 seconds
     public InventoryManagementTask(MainScript mainScript) {
         this.mainScript = mainScript;
 
@@ -30,7 +30,6 @@ public class InventoryManagementTask implements TaskManager.Task {
 
     @Override
     public boolean validate() {
-        mainScript.println("Validating InventoryManagementTask");
         for(String lootName : mainScript.lootToPickup) {
             int originalId = nametoidconverter(lootName);
             int notedId = originalId + 1;
@@ -47,26 +46,28 @@ public class InventoryManagementTask implements TaskManager.Task {
 
     @Override
     public void perform() {
-        mainScript.println("Performing InventoryManagementTask");
-        Map<String, Integer> lootFound = new HashMap<>();
         for(String lootName : mainScript.lootToPickup) {
-            int originalId = nametoidconverter(lootName);
-            int notedId = originalId + 1;
-            EntityResultSet<GroundItem> loot = GroundItemQuery.newQuery().ids(originalId, notedId).results();
+            Map<String, Integer> lootFound = new HashMap<>();
+            EntityResultSet<GroundItem> loot = GroundItemQuery.newQuery().name(lootName).results();
             for (GroundItem item : loot) {
-                if (item != null && !lootFound.containsKey(lootName)) {
-                    mainScript.println("Id of item " + nametoidconverter(lootName));
-                    lootFound.put(lootName, lootFound.getOrDefault(lootName, 0) + item.getStackSize()); // Increment count
-                    mainScript.lootCount.put(lootName, mainScript.lootCount.get(lootName) + item.getStackSize()); // Increment count
-                    Execution.delay(1000);
+                if (item != null) {
+                    mainScript.println("Item is not null: " + item);
+
+                        mainScript.println("lootFound does not contain key: " + lootName);
+                        int stackSize = item.getStackSize();
+                        mainScript.println("Stack size: " + stackSize);
+                        lootFound.put(lootName, lootFound.getOrDefault(lootName, 0) + stackSize); // Increment count
+                } else {
+                    mainScript.println("Item is null");
                 }
             }
-        }
-        if (!lootFound.isEmpty()) {
+            // Send webhook message for each unique item found
             for (Map.Entry<String, Integer> entry : lootFound.entrySet()) {
                 sendDiscordWebhook(entry.getKey(), entry.getValue());
+                Execution.delay(5000);
+                lootFound.clear();
+
             }
-            lootFound.clear();
         }
     }
 
@@ -89,11 +90,6 @@ public class InventoryManagementTask implements TaskManager.Task {
 
     public void sendDiscordWebhook(String itemName, int amount) {
         try {
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - lastWebhookCallTime < WEBHOOK_COOLDOWN) {
-                return;
-            }
-            lastWebhookCallTime = currentTime;
 
             URL url = new URL(mainScript.WebHookURL);
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
