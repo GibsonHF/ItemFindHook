@@ -82,6 +82,8 @@ public class MainScript extends LoopingScript {
         return super.initialize();
     }
 
+
+
     public void saveConfig(){
         String lootToPickupString = String.join(",", lootToPickup);
         config.addProperty("lootToPickup", lootToPickupString);
@@ -89,7 +91,7 @@ public class MainScript extends LoopingScript {
         config.save();
     }
     @Override
-    public void uninitialize() {
+    public void onDeactivation() {
         saveConfig();
         super.uninitialize();
     }

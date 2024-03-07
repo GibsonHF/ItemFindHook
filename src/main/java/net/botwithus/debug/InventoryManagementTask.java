@@ -107,6 +107,7 @@ public class InventoryManagementTask implements TaskManager.Task {
             try (OutputStream os = http.getOutputStream()) {
                 os.write(out);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
