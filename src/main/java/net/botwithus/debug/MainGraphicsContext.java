@@ -17,6 +17,9 @@ public class MainGraphicsContext extends ScriptGraphicsContext {
     private final MainScript script;
     private String lootNameInput = "Type Here...";
 
+    private String chatMessageInput = "Type Chat Message Here...";
+
+
     public InventoryManagementTask inventoryManagementTask;
 
 
@@ -40,6 +43,7 @@ public class MainGraphicsContext extends ScriptGraphicsContext {
                     script.LogoutNotification = createCheckboxWithTooltip("Logout Notification", script.LogoutNotification, "Notifies player logout in the webhook message.", "LogoutChild");
                     script.hideTimestamp = createCheckboxWithTooltip("Hide Timestamp", script.hideTimestamp, "Hides the timestamp of when drop was found in the webhook message.", "TimestampChild");
                     script.includeKillCount = createCheckboxWithTooltip("Show Kill Count", script.includeKillCount, "Shows the kill count in the discord webhook message when drop is received, Please unfilter game messages.", "TooltipChild");
+                    script.windowsNotification = createCheckboxWithTooltip("Windows Notification", script.windowsNotification, "Toggles the Windows notification on and off. When on, a Windows notification will be sent.", "windowsNotificationChild");
                     ImGui.Separator();
                     script.WebHookURL = ImGui.InputText("Webhook URL", script.WebHookURL, 256, 0);
                     ImGui.Separator();
@@ -73,6 +77,24 @@ public class MainGraphicsContext extends ScriptGraphicsContext {
                             lootIterator.remove();
                             script.lootToPickup.remove(lootName);
                             script.lootCount.remove(lootName);
+                        }
+                    }
+                    ImGui.Separator();
+                    chatMessageInput = ImGui.InputText("Chat Messages", chatMessageInput);
+                    if (ImGui.Button("Add Chat Message")) {
+                        if(!chatMessageInput.trim().isEmpty()) {
+                            script.addChatMessageToCheck(chatMessageInput);
+                            chatMessageInput = "";
+                        }
+                    }
+                    ImGui.Separator();
+
+                    Iterator<String> chatMessageIterator = script.chatMessagesToCheck.iterator();
+                    while (chatMessageIterator.hasNext()) {
+                        String chatMessage = chatMessageIterator.next();
+                        if (ImGui.Button(chatMessage)) {
+                            chatMessageIterator.remove();
+                            script.removeChatMessageToCheck(chatMessage);
                         }
                     }
                     ImGui.EndTabItem();

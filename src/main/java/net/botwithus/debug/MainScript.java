@@ -14,10 +14,13 @@ import net.botwithus.rs3.script.*;
 import net.botwithus.rs3.script.config.ScriptConfig;
 import net.botwithus.rs3.util.RandomGenerator;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 
 public class MainScript extends LoopingScript {
 
@@ -32,6 +35,9 @@ public class MainScript extends LoopingScript {
     public boolean includeKillCount;
 
     public InventoryManagementTask inventoryManagementTask;
+
+    //create a list of chat messages to check for from gui to set
+    public List<String> chatMessagesToCheck = new ArrayList<>();
 
 
     public MainScript(String name, ScriptConfig scriptConfig, ScriptDefinition scriptDefinition) {
@@ -66,11 +72,26 @@ public class MainScript extends LoopingScript {
             lootToPickup = new ArrayList<>(Arrays.asList(lootToPickupString.split(",")));
             lootToPickup.removeIf(lootName -> lootName.trim().isEmpty() || !lootName.matches(".*[a-zA-Z]+.*"));
         }
+        if(config.getProperty("chatMessagesToCheck") != null) {
+            String chatMessageString = config.getProperty("chatMessagesToCheck");
+            chatMessagesToCheck = new ArrayList<>(Arrays.asList(chatMessageString.split(",")));
+            chatMessagesToCheck.removeIf(chatMessage -> chatMessage.trim().isEmpty());
+        }
         if(config.getProperty("WebHookURL") != null)
              WebHookURL = config.getProperty("WebHookURL");
 
         subscribe(ChatMessageEvent.class, chatMessageEvent -> {
             String message = chatMessageEvent.getMessage();
+            for (String chatMessage : chatMessagesToCheck) {
+                chatMessage = chatMessage.toLowerCase();
+                if (message.contains(chatMessage)) {
+                    sendDiscordWebhook("Chat Message", "Chat Message: "+message);
+                    if(windowsNotification)
+                    {
+                        sendWindowsNotification("Chat Message", message);
+                    }
+                }
+            }
             if (message.contains("You have killed")) {
                 String[] splitMessage = message.split(" ");
                 String killCountString = splitMessage[3].replace(",", "");
@@ -86,8 +107,10 @@ public class MainScript extends LoopingScript {
 
     public void saveConfig(){
         String lootToPickupString = String.join(",", lootToPickup);
+        String chatMessageString = String.join(",", chatMessagesToCheck);
         config.addProperty("lootToPickup", lootToPickupString);
         config.addProperty("WebHookURL", WebHookURL);
+        config.addProperty("chatMessagesToCheck", chatMessageString);
         config.save();
     }
     @Override
@@ -187,6 +210,38 @@ public class MainScript extends LoopingScript {
         if (!lootNameInput.trim().isEmpty() && lootNameInput.matches(".*[a-zA-Z]+.*")) {
             lootToPickup.add(lootNameInput);
             lootCount.put(lootNameInput, 0); // Initialize count to 0
+        }
+    }
+
+    public void addChatMessageToCheck(String chatMessage) {
+        if (!chatMessage.trim().isEmpty()) {
+            chatMessagesToCheck.add(chatMessage);
+        }
+    }
+
+    public void removeChatMessageToCheck(String chatMessage) {
+        chatMessagesToCheck.remove(chatMessage);
+    }
+
+    public boolean windowsNotification;
+
+    public void sendWindowsNotification(String title, String message) {
+        if (windowsNotification) {
+            if (SystemTray.isSupported()) {
+                try {
+                    SystemTray tray = SystemTray.getSystemTray();
+                    // Create an empty image for the TrayIcon
+                    Image image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+                    TrayIcon trayIcon = new TrayIcon(image, "BotWithUs Notification");
+                    trayIcon.setImageAutoSize(true);
+                    tray.add(trayIcon);
+                    trayIcon.displayMessage(title, message, TrayIcon.MessageType.INFO);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.err.println("System tray not supported!");
+            }
         }
     }
 
