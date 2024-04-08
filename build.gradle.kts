@@ -48,7 +48,7 @@ tasks.named<Jar>("jar") {
 }
 
 dependencies {
-    implementation("net.botwithus.rs3:botwithus-api:1.0.0-20240307.072330-24")
+    implementation("net.botwithus.rs3:botwithus-api:1.0.0-20240404.003355-32")
     implementation("net.botwithus.xapi.public:api:1.0.0-20240211.205614-15")
     "includeInJar"("net.botwithus.xapi.public:api:1.0.0-20240211.205614-15")
     implementation("com.google.code.gson:gson:2.10.1")
