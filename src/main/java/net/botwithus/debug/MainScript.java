@@ -81,7 +81,8 @@ public class MainScript extends LoopingScript {
              WebHookURL = config.getProperty("WebHookURL");
 
         subscribe(ChatMessageEvent.class, chatMessageEvent -> {
-            String message = chatMessageEvent.getMessage();
+            String message = chatMessageEvent.getMessage().toLowerCase();
+            message = message.replaceAll("<col=.*?>|</col>", ""); // This line removes the <col> and </col> tags
             for (String chatMessage : chatMessagesToCheck) {
                 chatMessage = chatMessage.toLowerCase();
                 if (message.contains(chatMessage)) {
@@ -92,12 +93,11 @@ public class MainScript extends LoopingScript {
                     }
                 }
             }
-            if (message.contains("You have killed")) {
+            if (message.contains("you have killed")) {
                 String[] splitMessage = message.split(" ");
                 String killCountString = splitMessage[3].replace(",", "");
                 killCount = Integer.parseInt(killCountString);
             }
-
         });
 
         return super.initialize();

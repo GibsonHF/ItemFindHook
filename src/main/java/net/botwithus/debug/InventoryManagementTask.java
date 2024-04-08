@@ -48,15 +48,15 @@ public class InventoryManagementTask implements TaskManager.Task {
     public void perform() {
         for(String lootName : mainScript.lootToPickup) {
             Map<String, Integer> lootFound = new HashMap<>();
-            EntityResultSet<GroundItem> loot = GroundItemQuery.newQuery().name(lootName).results();
+            EntityResultSet<GroundItem> loot = GroundItemQuery.newQuery().name(lootName, String::contains).results();
             for (GroundItem item : loot) {
                 if (item != null) {
                     mainScript.println("Item is not null: " + item);
-
-                        mainScript.println("lootFound does not contain key: " + lootName);
-                        int stackSize = item.getStackSize();
-                        mainScript.println("Stack size: " + stackSize);
-                        lootFound.put(lootName, lootFound.getOrDefault(lootName, 0) + stackSize); // Increment count
+                    String fullItemName = item.getName(); // Get the full item name
+                    mainScript.println("lootFound does not contain key: " + fullItemName);
+                    int stackSize = item.getStackSize();
+                    mainScript.println("Stack size: " + stackSize);
+                    lootFound.put(fullItemName, lootFound.getOrDefault(fullItemName, 0) + stackSize); // Use the full item name as the key
                 } else {
                     mainScript.println("Item is null");
                 }
@@ -66,7 +66,6 @@ public class InventoryManagementTask implements TaskManager.Task {
                 sendDiscordWebhook(entry.getKey(), entry.getValue());
                 Execution.delay(5000);
                 lootFound.clear();
-
             }
         }
     }
