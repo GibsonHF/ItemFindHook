@@ -89,7 +89,6 @@ public class InventoryManagementTask implements TaskManager.Task {
 
     public void sendDiscordWebhook(String itemName, int amount) {
         try {
-
             URL url = new URL(mainScript.WebHookURL);
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod("POST");
@@ -107,6 +106,13 @@ public class InventoryManagementTask implements TaskManager.Task {
                 os.write(out);
             }
 
+            int responseCode = http.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_NO_CONTENT) {
+                System.out.println("Webhook sent successfully.");
+            } else {
+                System.out.println("POST request not worked, response code: " + responseCode);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -118,21 +124,30 @@ public class InventoryManagementTask implements TaskManager.Task {
                 + "\"description\":\"An item has been found!\","
                 + "\"color\": 5814783,"
                 + "\"fields\":["
-                + "    {\"name\":\"Item\", \"value\":\"" + itemName + "\", \"inline\":true},"
-                + "    {\"name\":\"Amount\", \"value\":\"" + amount + "\", \"inline\":true}");
+                + "{\"name\":\"Item\", \"value\":\"" + escapeJson(itemName) + "\", \"inline\":true},"
+                + "{\"name\":\"Amount\", \"value\":\"" + amount + "\", \"inline\":true}");
 
         if (!mainScript.hideTimestamp) {
-            String timestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault()).format(Instant.now());
+            String timestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                    .withZone(ZoneId.systemDefault())
+                    .format(Instant.now());
             jsonPayload.append(",{\"name\":\"Time\", \"value\":\"" + timestamp + "\", \"inline\":false}");
-        }else {
+        } else {
             jsonPayload.append(",{\"name\":\"Time\", \"value\":\"Hidden\", \"inline\":false}");
         }
-        if(mainScript.includeKillCount) {
+
+        if (mainScript.includeKillCount) {
             jsonPayload.append(",{\"name\":\"Kill Count\", \"value\":\"" + killCount + "\", \"inline\":true}");
         }
         jsonPayload.append("]}]}");
 
         return jsonPayload.toString();
+    }
+
+    // Utility method to escape special JSON characters
+    private String escapeJson(String text) {
+        return text.replace("\"", "\\\"")
+                .replace("\\", "\\\\");
     }
 
 

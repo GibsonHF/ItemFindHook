@@ -39,11 +39,17 @@ public class MainGraphicsContext extends ScriptGraphicsContext {
 
                 if (ImGui.BeginTabItem("Settings", 0)) {
                     script.runScript = createCheckboxWithTooltip("Run Script", script.runScript, "Toggles the script on and off. When off, the script will not run.", "runChild");
+                    script.saveConfig();
                     script.levelUpNotification = createCheckboxWithTooltip("Level Up Notification", script.levelUpNotification, "Notifies of level up and what skill in the webhook message.", "LevelUpChild");
+                    script.saveConfig();
                     script.LogoutNotification = createCheckboxWithTooltip("Logout Notification", script.LogoutNotification, "Notifies player logout in the webhook message.", "LogoutChild");
+                    script.saveConfig();
                     script.hideTimestamp = createCheckboxWithTooltip("Hide Timestamp", script.hideTimestamp, "Hides the timestamp of when drop was found in the webhook message.", "TimestampChild");
+                    script.saveConfig();
                     script.includeKillCount = createCheckboxWithTooltip("Show Kill Count", script.includeKillCount, "Shows the kill count in the discord webhook message when drop is received, Please unfilter game messages.", "TooltipChild");
+                    script.saveConfig();
                     script.windowsNotification = createCheckboxWithTooltip("Windows Notification", script.windowsNotification, "Toggles the Windows notification on and off. When on, a Windows notification will be sent.", "windowsNotificationChild");
+                    script.saveConfig();
                     ImGui.Separator();
                     script.WebHookURL = ImGui.InputText("Webhook URL", script.WebHookURL, 256, 0);
                     ImGui.Separator();

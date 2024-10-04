@@ -22,6 +22,8 @@ import java.net.URL;
 import java.util.*;
 import java.util.List;
 
+import static net.botwithus.rs3.script.ScriptConsole.println;
+
 public class MainScript extends LoopingScript {
 
 
@@ -164,39 +166,59 @@ public class MainScript extends LoopingScript {
         }
     }
 
-    public void sendDiscordWebhook(String title, String content) {
+    public void sendDiscordWebhook(String title, String description) {
+        String jsonPayload = String.format(
+                "{ \"embeds\": [" +
+                        "{ \"title\": \"%s\"," +
+                        "\"description\": \"%s\"," +
+                        "\"color\": 16711680," +
+                        "\"footer\": {\"text\": \"\"}," +
+                        "\"author\": {\"name\": \"%s\"}," +
+                        "\"fields\": []" +  // Empty fields array, can be populated if needed
+                        "}" +
+                        "], \"content\": \"\" }",
+                title, description, title // Using the title as author name
+        );
+
+        File tempFile = null;
         try {
-            URL url = new URL(WebHookURL);
-            HttpURLConnection http = (HttpURLConnection) url.openConnection();
-            http.setRequestMethod("POST");
-            http.setRequestProperty("Content-Type", "application/json");
-            http.setDoOutput(true);
-
-            String jsonPayload = String.format("{\"content\": \"%s\", \"\": \"%s\"}", content, title);
-
-            try (OutputStream os = http.getOutputStream()) {
-                byte[] input = jsonPayload.getBytes("utf-8");
-                os.write(input, 0, input.length);
+            tempFile = File.createTempFile("webhook", ".json");
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+                writer.write(jsonPayload);
             }
 
-            int responseCode = http.getResponseCode();
-            System.out.println("POST Response Code :: " + responseCode);
+            String command = String.format("curl -H \"Content-Type: application/json\" -X POST --data @%s %s", tempFile.getAbsolutePath(), WebHookURL);
+            println("Executing curl command: " + command);
+            runCommand(command);
 
-            if (responseCode == HttpURLConnection.HTTP_OK) { //success
-                BufferedReader in = new BufferedReader(new InputStreamReader(http.getInputStream()));
-                String inputLine;
-                StringBuffer response = new StringBuffer();
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-
-                System.out.println(response.toString());
-            } else {
-                System.out.println("POST request not worked");
+        } catch (IOException e) {
+            println("Error creating or writing to the temporary file: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
             }
-        } catch (Exception e) {
+        }
+    }
+
+    private void runCommand(String command) {
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c", command);
+            processBuilder.redirectErrorStream(true);
+            Process process = processBuilder.start();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder output = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
+            }
+
+            process.waitFor();
+            println("Command output: " + output);
+
+        } catch (IOException | InterruptedException e) {
+            println("Error occurred while executing the command: " + e.getMessage());
             e.printStackTrace();
         }
     }
